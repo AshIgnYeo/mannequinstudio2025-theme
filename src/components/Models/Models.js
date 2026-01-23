@@ -13,6 +13,7 @@ import ModelCard from "../ModelCard";
 import ModelPopup from "../ModelPopup";
 
 const Models = () => {
+  const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(null);
   const [error, setError] = useState(null);
   const { models, categories } = useModelContext();
@@ -23,8 +24,10 @@ const Models = () => {
 
   useEffect(() => {
     const fetchModels = async () => {
+      setIsLoading(true);
       const response = await fetchPage();
       response.error ? setError(response.content) : setPage(response.content);
+      setIsLoading(false);
     };
     fetchModels();
   }, []);
@@ -171,7 +174,7 @@ const Models = () => {
         <div className="w-4/5">
           {/* Display filtered models */}
           {filteredModels.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">No models found.</p>
+            <p className="text-center text-gray-500 py-8">{isLoading ? "Fetching models..." : "No models found."}</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {filteredModels.map((model) => (
