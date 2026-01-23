@@ -21,6 +21,7 @@ const Models = () => {
   const [activeEthnicity, setActiveEthnicity] = useState("all");
   const [activeInTown, setActiveInTown] = useState("all");
   const [selectedModel, setSelectedModel] = useState(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
     const fetchModels = async () => {
@@ -90,9 +91,19 @@ const Models = () => {
   return (
     <PageWrapper title={page?.title?.rendered}>
       {error && <div className="text-red-500 mb-4">{error}</div>}
-      <div className="flex">
-        <div className="w-1/5">
-          <div className="models-page-filters flex flex-col gap-2 sticky top-5">
+
+      {/* Mobile filter toggle */}
+      <button
+        className="md:hidden w-full py-3 px-4 mb-4 bg-gray-100 text-left font-semibold flex justify-between items-center"
+        onClick={() => setFiltersOpen(!filtersOpen)}
+      >
+        <span>Filters</span>
+        <span className="text-xl">{filtersOpen ? '−' : '+'}</span>
+      </button>
+
+      <div className="flex flex-col md:flex-row">
+        <div className={`w-full md:w-1/5 ${filtersOpen ? 'block' : 'hidden'} md:block`}>
+          <div className="models-page-filters flex flex-col gap-2 sticky top-5 pb-4 md:pb-0">
             {/* Gender Filter */}
             <div className="model-gender-filter flex flex-col gap-2 my-5">
               <h3 className="text-xl font-semibold">Gender</h3>
@@ -157,6 +168,7 @@ const Models = () => {
               <input
                 type="checkbox"
                 id="inTownCheckbox"
+                className="w-5 h-5"
                 checked={activeInTown === "yes"}
                 onChange={(e) => setActiveInTown(e.target.checked ? "yes" : "all")}
               />
@@ -171,10 +183,12 @@ const Models = () => {
             </div>
           </div>
         </div>
-        <div className="w-4/5">
+        <div className="w-full md:w-4/5">
           {/* Display filtered models */}
           {filteredModels.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">{isLoading ? "Fetching models..." : "No models found."}</p>
+            <p className="text-center text-gray-500 py-8">
+              {models.length === 0 ? "Loading models..." : "No models found matching your filters."}
+            </p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {filteredModels.map((model) => (

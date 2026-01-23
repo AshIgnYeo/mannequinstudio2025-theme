@@ -9,12 +9,12 @@ const HomeContact = () => {
   const instagramUrl = window.mannequinStudioOptions?.contactInstagram;
 
   return (
-    <section className="relative pb-20" id="contact">
+    <section className="relative pb-20 px-4 md:px-0" id="contact">
       <div className="container mx-auto">
-        <div className="flex items-center justify-center">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-0">
           {/* Contact Information */}
-          <div className="w-1/3">
-            <h2 className="text-7xl mb-5">Contact</h2>
+          <div className="w-full md:w-1/3">
+            <h2 className="text-4xl md:text-5xl lg:text-7xl mb-5">Contact</h2>
 
             <div className="space-y-4 text-gray-700">
               <div>
@@ -48,15 +48,15 @@ const HomeContact = () => {
                 href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block hover:opacity-75 transition-opacity duration-200"
+                className="inline-block hover:opacity-75 transition-opacity duration-200 p-2 -m-2"
               >
-                <FaInstagram className="text-3xl text-secondary hover:text-primary transition-colors duration-300" />
+                <FaInstagram className="text-4xl md:text-3xl text-secondary hover:text-primary transition-colors duration-300" />
               </a>
             </div>
           </div>
 
           {/* Map */}
-          <div className="w-2/3">
+          <div className="w-full md:w-2/3">
             {mapEmbedUrl ? (
               <div className="relative">
                 <iframe

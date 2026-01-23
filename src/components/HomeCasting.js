@@ -2,10 +2,10 @@ import { BsArrowRight } from "react-icons/bs";
 
 const HomeCasting = () => {
   return (
-    <div className="h-screen flex items-center justify-center relative">
-      <div className="w-1/5"></div>
-      <div className="w-2/5 group cursor-pointer">
-        <h2 className="text-7xl my-5 flex items-center justify-between">
+    <div className="min-h-screen flex items-center justify-center relative px-4 md:px-0">
+      <div className="hidden md:block md:w-1/5"></div>
+      <div className="w-full md:w-3/5 lg:w-2/5 group cursor-pointer">
+        <h2 className="text-4xl md:text-5xl lg:text-7xl my-5 flex items-center justify-between">
           Casting
           <BsArrowRight className="-translate-x-20 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300" />
         </h2>

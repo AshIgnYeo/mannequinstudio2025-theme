@@ -1,33 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useModelContext } from "../contexts/ModelContext";
-import { getApiUrl } from "../utils/config";
 
 const ModelCard = ({ model, modelCardSize, onCardClick }) => {
-  const [image, setImage] = useState(null);
   const { modelStats } = useModelContext();
+  const [isActive, setIsActive] = useState(false);
 
-  const featuredMediaUrl = model.featured_media
-    ? getApiUrl(`/wp-json/wp/v2/media/${model.featured_media}`)
-    : null;
+  // Get embedded featured media (no API call needed - already fetched with _embed)
+  const image = model._embedded?.["wp:featuredmedia"]?.[0] || null;
 
   const getImageSize = (size) => {
-    return image.media_details.sizes[size].source_url;
+    return image?.media_details?.sizes?.[size]?.source_url;
   };
 
   const getImageAlt = () => {
-    return image.alt;
+    return image?.alt_text || "";
   };
-
-  useEffect(() => {
-    const fetchImg = async () => {
-      const response = await fetch(featuredMediaUrl);
-      const data = await response.json();
-
-      setImage(data);
-    };
-
-    featuredMediaUrl && fetchImg();
-  }, [featuredMediaUrl]);
 
   // Style for fixed size (homepage) vs responsive (models page)
   const containerStyle = modelCardSize
@@ -41,27 +28,46 @@ const ModelCard = ({ model, modelCardSize, onCardClick }) => {
     }
   };
 
+  // Touch event handlers for mobile overlay
+  const handleTouchStart = () => {
+    setIsActive(true);
+  };
+
+  const handleTouchEnd = () => {
+    // Keep overlay visible briefly so user can see stats
+    setTimeout(() => setIsActive(false), 2000);
+  };
+
   return (
     <div
       className="flex flex-col items-center justify-center p-2 w-full"
       style={containerStyle}
     >
       <a className="w-full cursor-pointer" onClick={handleClick}>
-        <div className="w-full relative overflow-hidden group shadow-lg">
+        <div
+          className="w-full relative overflow-hidden group shadow-lg"
+          onMouseEnter={() => setIsActive(true)}
+          onMouseLeave={() => setIsActive(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           {image && (
             <img
               src={getImageSize("medium")}
               alt={getImageAlt()}
-              className="w-full aspect-[3/4] object-cover group-hover:scale-110 transition-all duration-300"
+              className={`w-full aspect-[3/4] object-cover transition-all duration-300 ${
+                isActive ? "scale-110" : ""
+              }`}
+              loading="lazy"
             />
           )}
           <div
-            className="
-          absolute pointer-events-none inset-0 bg-black/50
-          flex flex-col items-center justify-center
-          opacity-0 scale-150
-          group-hover:scale-100 group-hover:opacity-100
-          transition-all duration-300"
+            className={`
+              absolute pointer-events-none inset-0 bg-black/50
+              flex flex-col items-center justify-center
+              transition-all duration-300
+              ${isActive ? "scale-100 opacity-100" : "opacity-0 scale-150"}
+            `}
           >
             {modelStats(model, "Height")}
             {modelStats(model, "Bust")}
