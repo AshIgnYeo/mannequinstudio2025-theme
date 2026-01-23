@@ -107,7 +107,7 @@ export const ModelProvider = ({ children }) => {
 
     return (
       <div className="text-white">
-        <strong>{stat}:</strong> {model.acf[statKey]}cm
+        <strong>{stat}:</strong> {model.acf[statKey]}
       </div>
     );
   };
