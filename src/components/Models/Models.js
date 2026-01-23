@@ -38,7 +38,10 @@ const Models = () => {
     let filtered = filterByGender(models, activeGender);
     filtered = filterByEthnicity(filtered, activeEthnicity);
     filtered = filterByInTown(filtered, activeInTown);
-    return filtered;
+    // Sort alphabetically by title
+    return filtered.sort((a, b) =>
+      a.title.rendered.localeCompare(b.title.rendered)
+    );
   }, [activeGender, activeEthnicity, activeInTown, models]);
 
   // Memoize filter counts - shows count for each option based on other active filters
