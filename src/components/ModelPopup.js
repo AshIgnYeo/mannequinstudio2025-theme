@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import { useModelContext } from "../contexts/ModelContext";
 import { decodeHtmlEntities } from "../utils/htmlUtils";
-import { FaTimes, FaLongArrowAltRight, FaInstagram, FaYoutube, FaTiktok } from "react-icons/fa";
-import ButtonPrimary from "./ButtonPrimary";
-import ButtonSecondary from "./ButtonSecondary";
+import { FaTimes, FaInstagram, FaYoutube, FaTiktok } from "react-icons/fa";
 
 const ModelPopup = ({ model, onClose }) => {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -91,25 +89,21 @@ const ModelPopup = ({ model, onClose }) => {
 
         {/* Thumbnail gallery - Displayed only if there are more than 1 image. */}
         {model.gallery && model.gallery.length > 1 && (
-          <div className="w-1/10">
+          <div className="w-1/10 max-h-[80vh] overflow-y-auto">
             <div className="flex flex-col gap-2">
-              {model.gallery && model.gallery.length > 1 && (
-                <>
-                  {model.gallery.map((image) => (
-                    <img
-                      key={image.id}
-                      src={image.thumbnail}
-                      alt={image.alt}
-                      className={`aspect-[3/4] object-cover w-20 transition duration-300 ${
-                        selectedImage?.id === image.id
-                          ? "shadow-md scale-95"
-                          : ""
-                      }`}
-                      onClick={() => setSelectedImage(image)}
-                    />
-                  ))}
-                </>
-              )}
+              {model.gallery.map((image) => (
+                <img
+                  key={image.id}
+                  src={image.thumbnail}
+                  alt={image.alt}
+                  className={`aspect-[3/4] object-cover w-20 transition duration-300 cursor-pointer ${
+                    selectedImage?.id === image.id
+                      ? "shadow-md scale-95"
+                      : ""
+                  }`}
+                  onClick={() => setSelectedImage(image)}
+                />
+              ))}
             </div>
           </div>
         )}
@@ -226,13 +220,6 @@ const ModelPopup = ({ model, onClose }) => {
             </div>
           </div>
 
-          <div className="flex gap-2 mt-auto justify-end">
-            <ButtonSecondary>Add to collection</ButtonSecondary>
-            <ButtonPrimary>
-              Request {decodeHtmlEntities(model.title.rendered)}{" "}
-              <FaLongArrowAltRight />
-            </ButtonPrimary>
-          </div>
         </div>
       </div>
     </div>

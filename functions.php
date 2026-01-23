@@ -98,11 +98,6 @@ add_filter('enter_title_here', 'rename_cpt_title_texts');
 require_once get_template_directory() . '/includes/model-gallery.php';
 
 /**
- * Include Measurement Labels functionality
- */
-require_once get_template_directory() . '/includes/measurement-labels.php';
-
-/**
  * Include Theme Options functionality
  */
 require_once get_template_directory() . '/includes/theme-options.php';

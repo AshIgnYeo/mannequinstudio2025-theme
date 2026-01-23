@@ -12,6 +12,29 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Phase 3: Define constant for gallery order meta key
+define('MODEL_GALLERY_ORDER_META', '_gallery_order');
+
+/**
+ * Phase 3: Helper function to sort gallery images by order
+ *
+ * @param array $attachments Array of attachment objects
+ * @return array Sorted array of attachments
+ */
+function sort_gallery_images_by_order($attachments) {
+    if (empty($attachments)) {
+        return array();
+    }
+
+    usort($attachments, function($a, $b) {
+        $order_a = get_post_meta($a->ID, MODEL_GALLERY_ORDER_META, true);
+        $order_b = get_post_meta($b->ID, MODEL_GALLERY_ORDER_META, true);
+        return ($order_a ?: 0) - ($order_b ?: 0);
+    });
+
+    return $attachments;
+}
+
 /**
  * Add Model Gallery Metabox
  *
@@ -39,20 +62,14 @@ function model_gallery_metabox_callback($post) {
     // Add nonce for security
     wp_nonce_field('model_gallery_metabox', 'model_gallery_nonce');
 
-
-
     // Get existing gallery images using WordPress native attachments
     $gallery_images = get_attached_media('image', $post->ID);
     if (!is_array($gallery_images)) {
         $gallery_images = array();
     }
 
-    // Sort by gallery order
-    usort($gallery_images, function($a, $b) {
-        $order_a = get_post_meta($a->ID, '_gallery_order', true);
-        $order_b = get_post_meta($b->ID, '_gallery_order', true);
-        return ($order_a ?: 0) - ($order_b ?: 0);
-    });
+    // Sort by gallery order using helper function (Phase 3)
+    $gallery_images = sort_gallery_images_by_order($gallery_images);
 
     ?>
     <div id="model-gallery-container">
@@ -84,423 +101,6 @@ function model_gallery_metabox_callback($post) {
 
         <input type="hidden" id="model-gallery-images-input" name="model_gallery_images" value="<?php echo esc_attr(implode(',', wp_list_pluck($gallery_images, 'ID'))); ?>" />
     </div>
-
-    <style>
-        .gallery-images-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 15px 0;
-            min-height: 100px;
-            border: 2px dashed #ddd;
-            padding: 15px;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .gallery-images-container.drag-over {
-            border-color: #0073aa;
-            background-color: #f0f8ff;
-            border-style: solid;
-        }
-
-        .gallery-image-item {
-            position: relative;
-            width: 150px;
-            height: 150px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            overflow: hidden;
-            cursor: move;
-        }
-
-        .gallery-image-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .gallery-image-item .remove-image {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: #dc3232;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            line-height: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .gallery-image-item .remove-image:hover {
-            background: #a00;
-        }
-
-        .gallery-actions {
-            margin-top: 15px;
-        }
-
-        .gallery-images-container:empty::before {
-            content: "No images selected. Click 'Add Images to Gallery' or drag & drop images here.";
-            color: #666;
-            font-style: italic;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100px;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .gallery-image-placeholder {
-            width: 150px;
-            height: 150px;
-            border: 2px dashed #0073aa;
-            background: #f0f8ff;
-            border-radius: 4px;
-        }
-
-        .gallery-image-item.ui-sortable-helper {
-            transform: rotate(5deg);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .gallery-image-item.main-image {
-            border: 2px solid #0073aa;
-        }
-
-        .gallery-image-item .main-badge {
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            background: #0073aa;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-size: 11px;
-            font-weight: bold;
-            text-transform: uppercase;
-            z-index: 10;
-        }
-
-        .uploading-message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 115, 170, 0.9);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 4px;
-            font-weight: bold;
-            z-index: 1000;
-        }
-    </style>
-
-    <script>
-    jQuery(document).ready(function($) {
-        let mediaUploader;
-
-                // Initialize main badge on page load
-        updateMainBadge();
-
-        // Add images button click
-        $('#add-gallery-images').click(function(e) {
-            e.preventDefault();
-
-            if (mediaUploader) {
-                mediaUploader.open();
-                return;
-            }
-
-            mediaUploader = wp.media({
-                title: 'Select Images for Model Gallery',
-                button: {
-                    text: 'Add to Gallery'
-                },
-                multiple: true,
-                library: {
-                    type: 'image'
-                }
-            });
-
-            mediaUploader.on('select', function() {
-                const attachments = mediaUploader.state().get('selection').toJSON();
-                const currentImages = $('#model-gallery-images-input').val().split(',').filter(id => id !== '');
-
-                attachments.forEach(function(attachment) {
-                    if (currentImages.indexOf(attachment.id.toString()) === -1) {
-                        currentImages.push(attachment.id);
-                        addImageToGallery(attachment);
-                    }
-                });
-
-                updateHiddenInput(currentImages);
-            });
-
-            mediaUploader.open();
-        });
-
-        // Drag and drop file upload functionality
-        const galleryContainer = document.getElementById('model-gallery-images');
-
-        // Only handle file drops (not image reordering)
-        galleryContainer.addEventListener('dragenter', handleDragEnter, false);
-        galleryContainer.addEventListener('dragover', handleDragOver, false);
-        galleryContainer.addEventListener('dragleave', handleDragLeave, false);
-        galleryContainer.addEventListener('drop', handleFileDrop, false);
-
-        function handleDragEnter(e) {
-            // Only handle if dragging files from outside (not images within gallery)
-            if (e.dataTransfer.types.includes('Files') && !e.target.closest('.gallery-image-item')) {
-                e.preventDefault();
-                galleryContainer.classList.add('drag-over');
-            }
-        }
-
-        function handleDragOver(e) {
-            // Only handle if dragging files from outside (not images within gallery)
-            if (e.dataTransfer.types.includes('Files') && !e.target.closest('.gallery-image-item')) {
-                e.preventDefault();
-            }
-        }
-
-        function handleDragLeave(e) {
-            // Only remove highlight if leaving the container entirely
-            if (!galleryContainer.contains(e.relatedTarget)) {
-                galleryContainer.classList.remove('drag-over');
-            }
-        }
-
-        function handleFileDrop(e) {
-            // Only handle file drops if not dropping on an existing image
-            if (!e.target.closest('.gallery-image-item')) {
-                e.preventDefault();
-                galleryContainer.classList.remove('drag-over');
-
-                const dt = e.dataTransfer;
-                const files = dt.files;
-
-                if (files.length > 0) {
-                    uploadFiles(files);
-                }
-            }
-        }
-
-        function uploadFiles(files) {
-            const formData = new FormData();
-            const currentImages = $('#model-gallery-images-input').val().split(',').filter(id => id !== '');
-
-            // Filter only image files
-            const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
-
-            if (imageFiles.length === 0) {
-                alert('Please select only image files.');
-                return;
-            }
-
-            // Add each file to FormData
-            imageFiles.forEach((file, index) => {
-                formData.append('file[]', file);
-            });
-
-                    // Add WordPress nonce and action
-            formData.append('action', 'upload_model_gallery_images');
-            formData.append('nonce', '<?php echo wp_create_nonce('upload_model_gallery_images'); ?>');
-            formData.append('post_id', '<?php echo $post->ID; ?>');
-
-            // Show loading state
-            const loadingHtml = '<div class="uploading-message">Uploading images...</div>';
-            $(galleryContainer).append(loadingHtml);
-
-            // Upload files via AJAX
-            $.ajax({
-                url: ajax_object.ajaxurl,
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                                success: function(response) {
-                    $('.uploading-message').remove();
-
-                    if (response.success && response.data.attachments) {
-                        response.data.attachments.forEach(function(attachment) {
-                            if (currentImages.indexOf(attachment.id.toString()) === -1) {
-                                currentImages.push(attachment.id);
-                                addImageToGallery(attachment);
-                            }
-                        });
-                        updateHiddenInput(currentImages);
-
-                        // Set featured image if this is the first image and no featured image exists
-                        if (currentImages.length === 1 && !$('#post-thumbnail').find('img').length) {
-                            updateFeaturedImage(currentImages[0]);
-                        }
-                    } else {
-                        alert('Error uploading images: ' + (response.data.message || 'Unknown error'));
-                    }
-                },
-                error: function() {
-                    $('.uploading-message').remove();
-                    alert('Error uploading images. Please try again.');
-                }
-            });
-        }
-
-        // Remove image
-        $(document).on('click', '.remove-image', function() {
-            const imageId = $(this).data('image-id');
-            const imageElement = $(this).closest('.gallery-image-item');
-
-            // Confirm deletion
-            if (confirm('Are you sure you want to remove this image? This will also delete it from the media library.')) {
-                imageElement.remove();
-
-                // Get current images and remove the deleted one
-                const currentImages = $('#model-gallery-images-input').val().split(',').filter(id => id !== '' && id !== imageId.toString());
-                console.log('Removing image ID:', imageId);
-                console.log('Updated image list:', currentImages);
-                updateHiddenInput(currentImages);
-
-                // Delete from media library via AJAX
-                $.ajax({
-                    url: ajax_object.ajaxurl,
-                    type: 'POST',
-                    data: {
-                        action: 'delete_model_gallery_image',
-                        image_id: imageId,
-                        nonce: '<?php echo wp_create_nonce('delete_model_gallery_image'); ?>'
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            console.log('Image deleted from media library');
-                        } else {
-                            console.log('Error deleting image from media library:', response.data.message);
-                        }
-                    },
-                    error: function() {
-                        console.log('AJAX error when deleting image from media library');
-                    }
-                });
-
-                // Use timeout to avoid conflicts
-                setTimeout(function() {
-                    updateMainBadge();
-                }, 100);
-            }
-        });
-
-        // Make images sortable (only for existing images, not file uploads)
-        $('#model-gallery-images').sortable({
-            placeholder: 'gallery-image-placeholder',
-            items: '.gallery-image-item', // Only make image items sortable
-            update: function(event, ui) {
-                const imageIds = [];
-                $('#model-gallery-images .gallery-image-item').each(function() {
-                    imageIds.push($(this).data('image-id'));
-                });
-                updateHiddenInput(imageIds);
-
-                // Update gallery order via AJAX
-                updateGalleryOrder(imageIds);
-
-                // Use timeout to avoid conflicts with sortable
-                setTimeout(function() {
-                    updateMainBadge();
-                }, 100);
-            }
-        });
-
-        function addImageToGallery(attachment) {
-            const imageHtml = `
-                <div class="gallery-image-item" data-image-id="${attachment.id}">
-                    <img src="${attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url}" alt="Gallery Image" />
-                    <button type="button" class="remove-image" data-image-id="${attachment.id}">×</button>
-                </div>
-            `;
-            $('#model-gallery-images').append(imageHtml);
-
-            // Use timeout to avoid conflicts
-            setTimeout(function() {
-                updateMainBadge();
-            }, 100);
-        }
-
-        function updateHiddenInput(imageIds) {
-            // Filter out empty values and ensure we have valid IDs
-            const validIds = imageIds.filter(id => id !== '' && id !== null && id !== undefined);
-            $('#model-gallery-images-input').val(validIds.join(','));
-        }
-
-        function updateGalleryOrder(imageIds) {
-            $.ajax({
-                url: ajax_object.ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'update_model_gallery_order',
-                    image_ids: imageIds,
-                    post_id: '<?php echo $post->ID; ?>',
-                    nonce: '<?php echo wp_create_nonce('update_model_gallery_order'); ?>'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Featured image is now automatically updated in PHP
-                    } else {
-                        console.log('Error updating gallery order:', response.data.message);
-                    }
-                },
-                error: function() {
-                    console.log('AJAX error when updating gallery order');
-                }
-            });
-        }
-
-        function updateFeaturedImage(imageId) {
-            $.ajax({
-                url: ajax_object.ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'update_model_featured_image',
-                    image_id: imageId,
-                    post_id: '<?php echo $post->ID; ?>',
-                    nonce: '<?php echo wp_create_nonce('update_model_featured_image'); ?>'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Refresh the page to show the updated featured image
-                        setTimeout(function() {
-                            location.reload();
-                        }, 500);
-                    } else {
-                        console.log('Error updating featured image:', response.data.message);
-                    }
-                },
-                error: function() {
-                    console.log('AJAX error when updating featured image');
-                }
-            });
-        }
-
-        function updateMainBadge() {
-            // Remove all main badges and main-image classes
-            $('.gallery-image-item').removeClass('main-image');
-            $('.main-badge').remove();
-
-            // Add main badge to the first image
-            const firstImage = $('.gallery-image-item').first();
-            if (firstImage.length > 0) {
-                firstImage.addClass('main-image');
-                firstImage.append('<div class="main-badge">Main</div>');
-            }
-        }
-    });
-    </script>
     <?php
 }
 
@@ -549,13 +149,56 @@ function enqueue_model_gallery_assets($hook) {
         wp_enqueue_media();
         wp_enqueue_script('jquery-ui-sortable');
 
-        // Make ajaxurl available for AJAX requests
-        wp_localize_script('jquery', 'ajax_object', array(
-            'ajaxurl' => admin_url('admin-ajax.php')
+        // Phase 2: Enqueue external CSS
+        wp_enqueue_style(
+            'model-gallery-admin',
+            get_template_directory_uri() . '/css/admin/model-gallery.css',
+            array(),
+            '1.0.0'
+        );
+
+        // Phase 2: Enqueue external JS
+        wp_enqueue_script(
+            'model-gallery-admin',
+            get_template_directory_uri() . '/js/admin/model-gallery.js',
+            array('jquery', 'jquery-ui-sortable'),
+            '1.0.0',
+            true
+        );
+
+        // Phase 2: Pass data to JavaScript via wp_localize_script
+        wp_localize_script('model-gallery-admin', 'modelGalleryData', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'postId' => get_the_ID(),
+            'nonces' => array(
+                'upload' => wp_create_nonce('upload_model_gallery_images'),
+                'delete' => wp_create_nonce('delete_model_gallery_image'),
+                'order' => wp_create_nonce('update_model_gallery_order'),
+                'attach' => wp_create_nonce('attach_media_library_images'),
+                'featured' => wp_create_nonce('update_model_featured_image'),
+            )
         ));
     }
 }
 add_action('admin_enqueue_scripts', 'enqueue_model_gallery_assets');
+
+/**
+ * Phase 3: Helper function to create attachment response data
+ *
+ * @param int $attachment_id
+ * @return array
+ */
+function create_attachment_response($attachment_id) {
+    return array(
+        'id' => $attachment_id,
+        'url' => wp_get_attachment_url($attachment_id),
+        'sizes' => array(
+            'thumbnail' => array(
+                'url' => wp_get_attachment_image_url($attachment_id, 'thumbnail')
+            )
+        )
+    );
+}
 
 /**
  * AJAX handler for drag and drop file uploads
@@ -566,18 +209,21 @@ add_action('admin_enqueue_scripts', 'enqueue_model_gallery_assets');
  */
 function handle_model_gallery_upload() {
     // Verify nonce
-    if (!wp_verify_nonce($_POST['nonce'], 'upload_model_gallery_images')) {
-        wp_die('Security check failed');
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'upload_model_gallery_images')) {
+        wp_send_json_error(array('message' => 'Security check failed'));
+        return;
     }
 
     // Check user permissions
     if (!current_user_can('upload_files')) {
-        wp_die('You do not have permission to upload files');
+        wp_send_json_error(array('message' => 'You do not have permission to upload files'));
+        return;
     }
 
     // Check if files were uploaded
     if (empty($_FILES['file'])) {
         wp_send_json_error(array('message' => 'No files uploaded'));
+        return;
     }
 
     // Get post ID from the request
@@ -586,76 +232,140 @@ function handle_model_gallery_upload() {
     // Validate post ID and check if it's a valid model post
     if (!$post_id || get_post_type($post_id) !== 'model') {
         wp_send_json_error(array('message' => 'Invalid post ID or not a model post'));
+        return;
+    }
+
+    // Phase 4: Check user can edit this specific post
+    if (!current_user_can('edit_post', $post_id)) {
+        wp_send_json_error(array('message' => 'You do not have permission to edit this post'));
+        return;
     }
 
     $attachments = array();
     $files = $_FILES['file'];
 
-    // Handle multiple files
+    // Phase 3: Consolidated file handling - normalize to array format
+    $file_list = array();
     if (is_array($files['name'])) {
         for ($i = 0; $i < count($files['name']); $i++) {
-            $file = array(
+            $file_list[] = array(
                 'name' => $files['name'][$i],
                 'type' => $files['type'][$i],
                 'tmp_name' => $files['tmp_name'][$i],
                 'error' => $files['error'][$i],
                 'size' => $files['size'][$i]
             );
-
-            // Validate file type
-            if (strpos($file['type'], 'image/') !== 0) {
-                continue; // Skip non-image files
-            }
-
-                                    // Upload file and associate with the model post
-            $attachment_id = media_handle_sideload($file, $post_id);
-
-            if (!is_wp_error($attachment_id)) {
-                // Set initial gallery order
-                $current_count = count(get_attached_media('image', $post_id));
-                update_post_meta($attachment_id, '_gallery_order', $current_count);
-
-                $attachments[] = array(
-                    'id' => $attachment_id,
-                    'url' => wp_get_attachment_url($attachment_id),
-                    'sizes' => array(
-                        'thumbnail' => array(
-                            'url' => wp_get_attachment_image_url($attachment_id, 'thumbnail')
-                        )
-                    )
-                );
-            }
         }
     } else {
-                        // Handle single file
-        if (strpos($files['type'], 'image/') === 0) {
-            $attachment_id = media_handle_sideload($files, $post_id);
+        $file_list[] = $files;
+    }
 
-            if (!is_wp_error($attachment_id)) {
-                // Set initial gallery order
-                $current_count = count(get_attached_media('image', $post_id));
-                update_post_meta($attachment_id, '_gallery_order', $current_count);
+    // Process each file
+    foreach ($file_list as $file) {
+        // Validate file type
+        if (strpos($file['type'], 'image/') !== 0) {
+            continue; // Skip non-image files
+        }
 
-                $attachments[] = array(
-                    'id' => $attachment_id,
-                    'url' => wp_get_attachment_url($attachment_id),
-                    'sizes' => array(
-                        'thumbnail' => array(
-                            'url' => wp_get_attachment_image_url($attachment_id, 'thumbnail')
-                        )
-                    )
-                );
-            }
+        // Upload file and associate with the model post
+        $attachment_id = media_handle_sideload($file, $post_id);
+
+        if (!is_wp_error($attachment_id)) {
+            // Set initial gallery order
+            $current_count = count(get_attached_media('image', $post_id));
+            update_post_meta($attachment_id, MODEL_GALLERY_ORDER_META, $current_count);
+
+            $attachments[] = create_attachment_response($attachment_id);
         }
     }
 
     if (empty($attachments)) {
         wp_send_json_error(array('message' => 'No valid image files uploaded'));
+        return;
     }
 
     wp_send_json_success(array('attachments' => $attachments));
 }
 add_action('wp_ajax_upload_model_gallery_images', 'handle_model_gallery_upload');
+
+/**
+ * Phase 1: AJAX handler for attaching Media Library images to a model
+ *
+ * @return void
+ */
+function handle_attach_media_library_images() {
+    // Verify nonce
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'attach_media_library_images')) {
+        wp_send_json_error(array('message' => 'Security check failed'));
+        return;
+    }
+
+    // Check user permissions
+    if (!current_user_can('upload_files')) {
+        wp_send_json_error(array('message' => 'You do not have permission to manage media'));
+        return;
+    }
+
+    // Get post ID and image IDs
+    $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+    $image_ids = isset($_POST['image_ids']) ? array_map('intval', $_POST['image_ids']) : array();
+
+    if (!$post_id || empty($image_ids)) {
+        wp_send_json_error(array('message' => 'Invalid post ID or image IDs'));
+        return;
+    }
+
+    // Validate post exists and is a model
+    if (get_post_type($post_id) !== 'model') {
+        wp_send_json_error(array('message' => 'Invalid post type'));
+        return;
+    }
+
+    // Phase 4: Check user can edit this specific post
+    if (!current_user_can('edit_post', $post_id)) {
+        wp_send_json_error(array('message' => 'You do not have permission to edit this post'));
+        return;
+    }
+
+    // Get current attachment count for ordering
+    $current_count = count(get_attached_media('image', $post_id));
+    $attached = array();
+
+    foreach ($image_ids as $index => $image_id) {
+        // Phase 4: Validate each image exists and is an attachment
+        $attachment = get_post($image_id);
+        if (!$attachment || $attachment->post_type !== 'attachment') {
+            continue;
+        }
+
+        // Phase 4: Validate it's actually an image
+        if (strpos($attachment->post_mime_type, 'image/') !== 0) {
+            continue;
+        }
+
+        // Update post_parent to attach to this model
+        wp_update_post(array(
+            'ID' => $image_id,
+            'post_parent' => $post_id
+        ));
+
+        // Set gallery order for new images
+        update_post_meta($image_id, MODEL_GALLERY_ORDER_META, $current_count + $index);
+
+        $attached[] = $image_id;
+    }
+
+    if (empty($attached)) {
+        wp_send_json_error(array('message' => 'No valid images to attach'));
+        return;
+    }
+
+    wp_send_json_success(array(
+        'message' => 'Images attached successfully',
+        'attached' => $attached
+    ));
+}
+add_action('wp_ajax_attach_media_library_images', 'handle_attach_media_library_images');
 
 /**
  * AJAX handler for deleting images from media library
@@ -664,26 +374,37 @@ add_action('wp_ajax_upload_model_gallery_images', 'handle_model_gallery_upload')
  */
 function handle_model_gallery_image_delete() {
     // Verify nonce
-    if (!wp_verify_nonce($_POST['nonce'], 'delete_model_gallery_image')) {
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'delete_model_gallery_image')) {
         wp_send_json_error(array('message' => 'Security check failed'));
+        return;
     }
 
-    // Check user permissions
-    if (!current_user_can('delete_posts')) {
-        wp_send_json_error(array('message' => 'You do not have permission to delete files'));
-    }
-
-    // Get image ID
-    $image_id = intval($_POST['image_id']);
+    // Get image ID and post ID
+    $image_id = isset($_POST['image_id']) ? intval($_POST['image_id']) : 0;
+    $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
 
     if (!$image_id) {
         wp_send_json_error(array('message' => 'Invalid image ID'));
+        return;
     }
 
     // Check if the attachment exists
     $attachment = get_post($image_id);
     if (!$attachment || $attachment->post_type !== 'attachment') {
         wp_send_json_error(array('message' => 'Image not found'));
+        return;
+    }
+
+    // Phase 4: Check attachment belongs to the specified model
+    if ($post_id && $attachment->post_parent !== $post_id) {
+        wp_send_json_error(array('message' => 'Image does not belong to this model'));
+        return;
+    }
+
+    // Phase 4: Use more specific capability check
+    if (!current_user_can('delete_post', $image_id)) {
+        wp_send_json_error(array('message' => 'You do not have permission to delete this file'));
+        return;
     }
 
     // Delete the attachment
@@ -704,31 +425,46 @@ add_action('wp_ajax_delete_model_gallery_image', 'handle_model_gallery_image_del
  */
 function handle_model_gallery_order_update() {
     // Verify nonce
-    if (!wp_verify_nonce($_POST['nonce'], 'update_model_gallery_order')) {
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'update_model_gallery_order')) {
         wp_send_json_error(array('message' => 'Security check failed'));
-    }
-
-    // Check user permissions
-    if (!current_user_can('edit_posts')) {
-        wp_send_json_error(array('message' => 'You do not have permission to edit posts'));
+        return;
     }
 
     // Get post ID and image IDs
-    $post_id = intval($_POST['post_id']);
+    $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
     $image_ids = isset($_POST['image_ids']) ? array_map('intval', $_POST['image_ids']) : array();
 
     if (!$post_id || empty($image_ids)) {
         wp_send_json_error(array('message' => 'Invalid post ID or image IDs'));
+        return;
     }
 
     // Check if the post exists and is a model
     if (get_post_type($post_id) !== 'model') {
         wp_send_json_error(array('message' => 'Invalid post type'));
+        return;
+    }
+
+    // Check user permissions for this specific post
+    if (!current_user_can('edit_post', $post_id)) {
+        wp_send_json_error(array('message' => 'You do not have permission to edit this post'));
+        return;
     }
 
     // Update order for each image
     foreach ($image_ids as $position => $image_id) {
-        update_post_meta($image_id, '_gallery_order', $position);
+        // Phase 4: Validate each image's post_parent matches the model
+        $attachment = get_post($image_id);
+        if (!$attachment || $attachment->post_type !== 'attachment') {
+            continue;
+        }
+
+        // Only update order for images attached to this model
+        if ($attachment->post_parent !== $post_id) {
+            continue;
+        }
+
+        update_post_meta($image_id, MODEL_GALLERY_ORDER_META, $position);
     }
 
     // Set the first image as featured image
@@ -753,32 +489,37 @@ add_action('wp_ajax_update_model_gallery_order', 'handle_model_gallery_order_upd
  */
 function handle_model_featured_image_update() {
     // Verify nonce
-    if (!wp_verify_nonce($_POST['nonce'], 'update_model_featured_image')) {
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'update_model_featured_image')) {
         wp_send_json_error(array('message' => 'Security check failed'));
-    }
-
-    // Check user permissions
-    if (!current_user_can('edit_posts')) {
-        wp_send_json_error(array('message' => 'You do not have permission to edit posts'));
+        return;
     }
 
     // Get post ID and image ID
-    $post_id = intval($_POST['post_id']);
-    $image_id = intval($_POST['image_id']);
+    $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+    $image_id = isset($_POST['image_id']) ? intval($_POST['image_id']) : 0;
 
     if (!$post_id || !$image_id) {
         wp_send_json_error(array('message' => 'Invalid post ID or image ID'));
+        return;
     }
 
     // Check if the post exists and is a model
     if (get_post_type($post_id) !== 'model') {
         wp_send_json_error(array('message' => 'Invalid post type'));
+        return;
+    }
+
+    // Check user permissions
+    if (!current_user_can('edit_post', $post_id)) {
+        wp_send_json_error(array('message' => 'You do not have permission to edit this post'));
+        return;
     }
 
     // Check if the image exists and is attached to this post
     $attachment = get_post($image_id);
     if (!$attachment || $attachment->post_type !== 'attachment' || $attachment->post_parent !== $post_id) {
         wp_send_json_error(array('message' => 'Invalid image or image not attached to this post'));
+        return;
     }
 
     // Set as featured image
@@ -822,12 +563,8 @@ function add_gallery_to_rest_api() {
                 return array();
             }
 
-            // Sort by gallery order
-            usort($attachments, function($a, $b) {
-                $order_a = get_post_meta($a->ID, '_gallery_order', true);
-                $order_b = get_post_meta($b->ID, '_gallery_order', true);
-                return ($order_a ?: 0) - ($order_b ?: 0);
-            });
+            // Sort by gallery order using helper function (Phase 3)
+            $attachments = sort_gallery_images_by_order($attachments);
 
             $images = array();
             foreach ($attachments as $attachment) {
@@ -852,10 +589,6 @@ function add_gallery_to_rest_api() {
 }
 add_action('rest_api_init', 'add_gallery_to_rest_api');
 
-
-
-
-
 /**
  * Get Model Gallery Images
  *
@@ -875,12 +608,8 @@ function get_model_gallery_images($post_id = null, $size = 'full') {
         return array();
     }
 
-    // Sort by gallery order
-    usort($attachments, function($a, $b) {
-        $order_a = get_post_meta($a->ID, '_gallery_order', true);
-        $order_b = get_post_meta($b->ID, '_gallery_order', true);
-        return ($order_a ?: 0) - ($order_b ?: 0);
-    });
+    // Sort by gallery order using helper function (Phase 3)
+    $attachments = sort_gallery_images_by_order($attachments);
 
     $images = array();
     foreach ($attachments as $attachment) {

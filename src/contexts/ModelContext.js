@@ -25,28 +25,8 @@ export const useModelContext = () => {
  * @returns {React.ReactNode} ModelProvider component
  */
 export const ModelProvider = ({ children }) => {
-  const [measurementLabels, setMeasurementLabels] = useState([]);
   const [models, setModels] = useState([]);
   const [categories, setCategories] = useState([]);
-
-  // Fetch measurement labels from the REST API
-  useEffect(() => {
-    const fetchMeasurementLabels = async () => {
-      const response = await fetch(
-        getApiUrl("/wp-json/mannequin-studio/v1/measurement-labels")
-      );
-
-      const labels = await response.json();
-
-      const measurementLabels = labels.reduce((acc, label) => {
-        acc[label.name.toLowerCase()] = label;
-        return acc;
-      }, {});
-      setMeasurementLabels(measurementLabels);
-    };
-
-    fetchMeasurementLabels();
-  }, []);
 
   /**
    * Fetch the models
@@ -104,15 +84,6 @@ export const ModelProvider = ({ children }) => {
   };
 
   /**
-   * Returns the measurement label
-   * @param {String} statKey stat key
-   * @returns {String} measurement label
-   */
-  const getMeasurementLabel = (statKey) => {
-    return measurementLabels[statKey]?.unit || "cm";
-  };
-
-  /**
    * Converts a string to lower snake case
    * @param {String} str string to convert
    * @returns {String} lower snake case string
@@ -136,8 +107,7 @@ export const ModelProvider = ({ children }) => {
 
     return (
       <div className="text-white">
-        <strong>{stat}:</strong> {model.acf[statKey]}
-        {getMeasurementLabel(statKey)}
+        <strong>{stat}:</strong> {model.acf[statKey]}cm
       </div>
     );
   };
