@@ -5,13 +5,12 @@
 
 /**
  * Check if we're in development mode
+ * Uses only runtime checks to avoid build-time optimization issues
  * @returns {boolean} true if in development mode
  */
 export const isDev = () => {
-  return (
-    process.env.NODE_ENV === "development" ||
-    window.location.hostname === "localhost"
-  );
+  const hostname = window.location.hostname;
+  return hostname === "localhost" || hostname.endsWith(".local");
 };
 
 /**
