@@ -1,0 +1,229 @@
+@import "tailwindcss";
+
+/* Tell Tailwind to watch these files for class names */
+@source ".";
+
+/* Jost Font Configuration for Tailwind v4 */
+@theme {
+  --font-family-jost: "Jost", sans-serif;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-semibold: 600;
+  --color-primary: #3d3c3d;
+  --color-secondary: #b8b8b8;
+  --color-white: #f8f8f8;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 100%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 0%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+body {
+  font-family: var(--font-family-jost);
+  font-weight: var(--font-weight-light);
+  color: var(--color-primary);
+  background: linear-gradient(
+    135deg,
+    #F4FEFF 0%,
+    #F8F4FF 20%,
+    #F8F8F8 40%,
+    #FFFAF4 60%,
+    #F4FFF8 80%,
+    #F4FEFF 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 45s ease-in-out infinite;
+  min-height: 100vh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    animation: none;
+    background: #F4FEFF;
+  }
+}
+
+p {
+  @apply mb-2;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-family-jost);
+  font-weight: var(--font-weight-light);
+}
+
+strong,
+b {
+  font-family: var(--font-family-jost);
+  font-weight: var(--font-weight-semibold);
+}
+
+.model-gender-filter {
+  a {
+    @apply text-4xl;
+
+    &.active {
+      @apply text-5xl;
+      color: var(--color-primary);
+      background-size: 100% 2px;
+    }
+
+    &:hover {
+      color: var(--color-primary);
+    }
+  }
+}
+
+.model-ethnicity-filter,
+.model-gender-filter {
+  a {
+    background: linear-gradient(var(--color-primary), var(--color-primary));
+    background-size: 0% 2px;
+    background-position: bottom center;
+    background-repeat: no-repeat;
+    color: var(--color-secondary);
+    transition: all 0.3s;
+
+    &:hover {
+      color: var(--color-primary);
+    }
+  }
+}
+
+.model-ethnicity-filter {
+  a {
+    &.active {
+      @apply text-3xl;
+      color: var(--color-primary);
+    }
+  }
+}
+
+/* Models page specific styling - no underline on gender filter */
+.models-page-filters {
+  .model-gender-filter {
+    a.active {
+      background-size: 0% 2px; /* Remove underline for models page */
+    }
+  }
+}
+
+/* Custom checkbox styling - black and white */
+.model-intown-filter input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--color-primary);
+  border-radius: 0.125rem;
+  background-color: white;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.model-intown-filter input[type="checkbox"]:checked {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.model-intown-filter input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: white;
+}
+
+.model-intown-filter input[type="checkbox"]:hover {
+  border-color: var(--color-secondary);
+}
+
+/* Custom scrollbar styling for models row */
+.overflow-x-auto {
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-primary);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
+    opacity: 0.8;
+  }
+
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) transparent;
+}
+
+/* Casting Form Styles */
+.casting-form {
+  background-color: #0a0a0a;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Focus states for accessibility */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.3);
+  outline-offset: 2px;
+}
+
+/* Success/Error message animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.status-message {
+  animation: slideDown 0.3s ease-out;
+}

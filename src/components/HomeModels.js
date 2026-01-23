@@ -1,0 +1,162 @@
+import { useState, useEffect, useRef, useMemo } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { useModelContext } from "../contexts/ModelContext";
+import HomeModelsRow from "./HomeModelsRow";
+import { BsArrowRight } from "react-icons/bs";
+import {
+  isFilterActive,
+  filterByGender,
+  filterByEthnicity,
+} from "../utils/filterUtils";
+import { decodeHtmlEntities } from "../utils/htmlUtils";
+import ModelPopup from "./ModelPopup";
+
+const HomeModels = () => {
+  const modelsContainerRef = useRef(null);
+
+  const { categories, models } = useModelContext();
+  const [activeGender, setActiveGender] = useState("all");
+  const [activeEthnicity, setActiveEthnicity] = useState("all");
+  const [modelCardSize, setModelCardSize] = useState(0);
+  const [selectedModel, setSelectedModel] = useState(null);
+
+  /**
+   * Calculate the model card size
+   * card size should be 1/6 of the container width
+   */
+  const calculateModelCardSize = () => {
+    const containerWidth = modelsContainerRef.current.offsetWidth;
+    const totalCards = containerWidth > 800 ? 5 : 3;
+    const cardWidth = containerWidth / totalCards;
+
+    setModelCardSize(cardWidth);
+  };
+
+  /**
+   * Calculate the model card size when the container is loaded
+   * recalculate the model card size when the container is resized
+   */
+  useEffect(() => {
+    calculateModelCardSize();
+    window.addEventListener("resize", calculateModelCardSize);
+
+    return () => {
+      window.removeEventListener("resize", calculateModelCardSize);
+    };
+  }, [modelsContainerRef.current]);
+
+  // Memoize filtered models to prevent unnecessary re-renders
+  const filteredModels = useMemo(() => {
+    let filtered = filterByGender(models, activeGender);
+    filtered = filterByEthnicity(filtered, activeEthnicity);
+    return filtered;
+  }, [activeGender, activeEthnicity, models]);
+
+  return (
+    <div className="container mx-auto relative min-h-screen flex justify-center items-center">
+      <div className="w-full">
+        <div className="flex w-full justify-between flex-row-reverse items-center">
+          <a href="/models">
+            <h2 className="text-7xl group flex items-center justify-between">
+              Models
+              <BsArrowRight className="ml-5 -translate-x-5 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300" />
+            </h2>
+          </a>
+          <div className="model-gender-filter flex items-center">
+            <a
+              className={`mx-2 cursor-pointer ${isFilterActive(
+                activeGender,
+                "Female"
+              )}`}
+              onClick={() => setActiveGender("Female")}
+            >
+              WOMEN
+            </a>
+            <a
+              className={`mx-2 cursor-pointer ${isFilterActive(
+                activeGender,
+                "Male"
+              )}`}
+              onClick={() => setActiveGender("Male")}
+            >
+              MEN
+            </a>
+            <a
+              className={`mx-2 cursor-pointer ${isFilterActive(
+                activeGender,
+                "all"
+              )}`}
+              onClick={() => setActiveGender("all")}
+            >
+              ALL
+            </a>
+            <span className="mx-2 text-lg">({filteredModels.length})</span>
+          </div>
+        </div>
+
+        <div className="flex">
+          {/* ethnicity filter container */}
+          <div className="w-1/4">
+            <div className="model-ethnicity-filter flex flex-col gap-2 mx-3 my-5">
+              <a
+                className={`text-xl cursor-pointer ${isFilterActive(
+                  activeEthnicity,
+                  "all"
+                )}`}
+                onClick={() => setActiveEthnicity("all")}
+              >
+                All
+              </a>
+
+              {categories.map((category) => (
+                <a
+                  key={category.id}
+                  className={`text-xl cursor-pointer ${isFilterActive(
+                    activeEthnicity,
+                    category.id
+                  )}`}
+                  onClick={() => setActiveEthnicity(category.id)}
+                >
+                  {decodeHtmlEntities(category.name)}
+                </a>
+              ))}
+            </div>
+          </div>
+          {/* models container */}
+          <div className="w-3/4 overflow-hidden">
+            <div className="overflow-x-auto relative" ref={modelsContainerRef}>
+              <div className="relative overflow-y-hidden">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${activeGender}-${activeEthnicity}`}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.02 }}
+                    transition={{ duration: 0.3 }}
+                    style={{
+                      transformOrigin: "center center",
+                      willChange: "transform, opacity",
+                    }}
+                  >
+                    <HomeModelsRow
+                      models={filteredModels}
+                      modelCardSize={modelCardSize}
+                      onCardClick={setSelectedModel}
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Model Popup */}
+      {selectedModel && (
+        <ModelPopup model={selectedModel} onClose={() => setSelectedModel(null)} />
+      )}
+    </div>
+  );
+};
+
+export default HomeModels;
