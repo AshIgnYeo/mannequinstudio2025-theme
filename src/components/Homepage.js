@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import HomeHero from "./HomeHero";
 import HomeModels from "./HomeModels";
-import HomeCasting from "./HomeCasting";
 import HomeContact from "./HomeContact";
 import { useInView } from "motion/react";
 import { useBubbleAnimation } from "../utils/bubbleAnimation";
@@ -44,7 +43,6 @@ const Homepage = () => {
       <ModelProvider>
         <HomeModels />
       </ModelProvider>
-      <HomeCasting />
       <HomeContact />
     </main>
   );

@@ -58,7 +58,7 @@ const HomeModels = () => {
         <div className="flex w-full justify-between flex-row-reverse items-center">
           <a href="/models">
             <h2 className="text-7xl group flex items-center justify-between">
-              Models
+              All Models
               <BsArrowRight className="ml-5 -translate-x-5 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300" />
             </h2>
           </a>
@@ -66,7 +66,7 @@ const HomeModels = () => {
             <a
               className={`mx-2 cursor-pointer ${isFilterActive(
                 activeGender,
-                "Female"
+                "Female",
               )}`}
               onClick={() => setActiveGender("Female")}
             >
@@ -75,7 +75,7 @@ const HomeModels = () => {
             <a
               className={`mx-2 cursor-pointer ${isFilterActive(
                 activeGender,
-                "Male"
+                "Male",
               )}`}
               onClick={() => setActiveGender("Male")}
             >
@@ -84,7 +84,7 @@ const HomeModels = () => {
             <a
               className={`mx-2 cursor-pointer ${isFilterActive(
                 activeGender,
-                "all"
+                "all",
               )}`}
               onClick={() => setActiveGender("all")}
             >
@@ -101,7 +101,7 @@ const HomeModels = () => {
               <a
                 className={`text-xl cursor-pointer ${isFilterActive(
                   activeEthnicity,
-                  "all"
+                  "all",
                 )}`}
                 onClick={() => setActiveEthnicity("all")}
               >
@@ -113,7 +113,7 @@ const HomeModels = () => {
                   key={category.id}
                   className={`text-xl cursor-pointer ${isFilterActive(
                     activeEthnicity,
-                    category.id
+                    category.id,
                   )}`}
                   onClick={() => setActiveEthnicity(category.id)}
                 >
@@ -138,8 +138,9 @@ const HomeModels = () => {
                       willChange: "transform, opacity",
                     }}
                   >
+                    {/* Get only the first 10 on the homepage */}
                     <HomeModelsRow
-                      models={filteredModels}
+                      models={filteredModels.slice(0, 10)}
                       modelCardSize={modelCardSize}
                       onCardClick={setSelectedModel}
                     />
@@ -153,7 +154,10 @@ const HomeModels = () => {
 
       {/* Model Popup */}
       {selectedModel && (
-        <ModelPopup model={selectedModel} onClose={() => setSelectedModel(null)} />
+        <ModelPopup
+          model={selectedModel}
+          onClose={() => setSelectedModel(null)}
+        />
       )}
     </div>
   );

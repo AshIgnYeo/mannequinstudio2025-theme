@@ -140,18 +140,6 @@ const Navigation = ({ visible }) => {
             <a
               className="text-primary no-underline text-3xl md:text-5xl lg:text-[5rem] transition-all duration-300 py-2"
               style={{ transitionDelay: menuOpen ? "0.1s" : "0s" }}
-              href="/casting"
-              onClick={closeMenu}
-              onMouseEnter={() => handleLinkInteraction("casting", true)}
-              onMouseLeave={() => handleLinkInteraction("casting", false)}
-              onTouchStart={() => handleLinkInteraction("casting", true)}
-              onTouchEnd={() => handleLinkInteraction("casting", false)}
-            >
-              Casting
-            </a>
-            <a
-              className="text-primary no-underline text-3xl md:text-5xl lg:text-[5rem] transition-all duration-300 py-2"
-              style={{ transitionDelay: menuOpen ? "0.1s" : "0s" }}
               href="/#contact"
               onClick={handleContactClick}
               onMouseEnter={() => handleLinkInteraction("contact", true)}
