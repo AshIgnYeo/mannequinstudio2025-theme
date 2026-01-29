@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useInView } from "motion/react";
 import { useModelContext } from "../contexts/ModelContext";
 import HomeModelsRow from "./HomeModelsRow";
 import { BsArrowRight } from "react-icons/bs";
@@ -13,6 +13,8 @@ import ModelPopup from "./ModelPopup";
 
 const HomeModels = () => {
   const modelsContainerRef = useRef(null);
+  const sectionRef = useRef(null);
+  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   const { categories, models } = useModelContext();
   const [activeGender, setActiveGender] = useState("all");
@@ -53,9 +55,17 @@ const HomeModels = () => {
   }, [activeGender, activeEthnicity, models]);
 
   return (
-    <div className="container mx-auto relative min-h-screen flex justify-center items-center">
+    <div
+      ref={sectionRef}
+      className="container mx-auto relative min-h-screen flex justify-center items-center"
+    >
       <div className="w-full">
-        <div className="flex w-full justify-between flex-row-reverse items-center">
+        <motion.div
+          className="flex w-full justify-between flex-row-reverse items-center"
+          initial={{ opacity: 0, y: -30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -30 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
           <a href="/models">
             <h2 className="text-7xl group flex items-center justify-between">
               All Models
@@ -92,11 +102,16 @@ const HomeModels = () => {
             </a>
             <span className="mx-2 text-lg">({filteredModels.length})</span>
           </div>
-        </div>
+        </motion.div>
 
         <div className="flex">
           {/* ethnicity filter container */}
-          <div className="w-1/4">
+          <motion.div
+            className="w-1/4"
+            initial={{ opacity: 0, x: -30 }}
+            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+          >
             <div className="model-ethnicity-filter flex flex-col gap-2 mx-3 my-5">
               <a
                 className={`text-xl cursor-pointer ${isFilterActive(
@@ -121,9 +136,16 @@ const HomeModels = () => {
                 </a>
               ))}
             </div>
-          </div>
+          </motion.div>
           {/* models container */}
-          <div className="w-3/4 overflow-hidden">
+          <motion.div
+            className="w-3/4 overflow-hidden"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={
+              isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }
+            }
+            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+          >
             <div className="overflow-x-auto relative" ref={modelsContainerRef}>
               <div className="relative overflow-y-hidden">
                 <AnimatePresence mode="wait">
@@ -148,7 +170,7 @@ const HomeModels = () => {
                 </AnimatePresence>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 

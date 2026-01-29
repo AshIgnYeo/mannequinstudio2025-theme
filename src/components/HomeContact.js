@@ -1,7 +1,11 @@
-import React from "react";
+import React, { useRef } from "react";
+import { motion, useInView } from "motion/react";
 import { FaInstagram } from "react-icons/fa";
 
 const HomeContact = () => {
+  const sectionRef = useRef(null);
+  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+
   // Get the contact data from WordPress options
   const mapEmbedUrl = window.mannequinStudioOptions?.contactMapEmbed;
   const contactEmail = window.mannequinStudioOptions?.contactEmail;
@@ -9,11 +13,16 @@ const HomeContact = () => {
   const instagramUrl = window.mannequinStudioOptions?.contactInstagram;
 
   return (
-    <section className="relative pb-20 px-4 md:px-0" id="contact">
+    <section ref={sectionRef} className="relative pb-20 px-4 md:px-0" id="contact">
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-0">
           {/* Contact Information */}
-          <div className="w-full md:w-1/3">
+          <motion.div
+            className="w-full md:w-1/3"
+            initial={{ opacity: 0, x: -40 }}
+            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -40 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
             <h2 className="text-4xl md:text-5xl lg:text-7xl mb-5">Contact</h2>
 
             <div className="space-y-4 text-gray-700">
@@ -53,10 +62,15 @@ const HomeContact = () => {
                 <FaInstagram className="text-4xl md:text-3xl text-secondary hover:text-primary transition-colors duration-300" />
               </a>
             </div>
-          </div>
+          </motion.div>
 
           {/* Map */}
-          <div className="w-full md:w-2/3">
+          <motion.div
+            className="w-full md:w-2/3"
+            initial={{ opacity: 0, x: 40 }}
+            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 40 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+          >
             {mapEmbedUrl ? (
               <div className="relative">
                 <iframe
@@ -83,7 +97,7 @@ const HomeContact = () => {
                 </p>
               </div>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
