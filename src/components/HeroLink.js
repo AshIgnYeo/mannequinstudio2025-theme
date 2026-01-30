@@ -5,6 +5,10 @@ import { BsArrowRight } from "react-icons/bs";
 const HeroLink = ({ link, delay, setHoverLink }) => {
   const [isActive, setIsActive] = useState(false);
 
+  const linkOverrides = {
+    contact: "/#contact",
+  };
+
   const handleInteractionStart = () => {
     setIsActive(true);
     setHoverLink(link);
@@ -17,7 +21,7 @@ const HeroLink = ({ link, delay, setHoverLink }) => {
 
   return (
     <motion.a
-      href={`/${link}`}
+      href={linkOverrides[link] || `/${link}`}
       className="text-4xl md:text-6xl lg:text-8xl flex items-center group"
       onMouseEnter={handleInteractionStart}
       onMouseLeave={handleInteractionEnd}
