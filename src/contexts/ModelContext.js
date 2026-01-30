@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { getApiUrl } from "../utils/config";
 
 /**
@@ -27,36 +33,59 @@ export const useModelContext = () => {
 export const ModelProvider = ({ children }) => {
   const [models, setModels] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [isLoadingModels, setIsLoadingModels] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   /**
-   * Fetch the models
+   * Fetch the initial page of models
    */
   useEffect(() => {
-    const fetchModels = async () => {
-      const allModels = [];
-      let page = 1;
-      let hasMorePages = true;
-
-      while (hasMorePages) {
+    const fetchInitialModels = async () => {
+      setIsLoadingModels(true);
+      try {
         const response = await fetch(
-          getApiUrl(`/wp-json/wp/v2/models?per_page=10&page=${page}&_embed`)
+          getApiUrl(`/wp-json/wp/v2/models?per_page=20&page=1&_embed`)
         );
+        const data = await response.json();
+        const total = parseInt(response.headers.get("X-WP-TotalPages") || "1");
 
-        const modelsData = await response.json();
-        allModels.push(...modelsData);
-
-        const totalPages = parseInt(
-          response.headers.get("X-WP-TotalPages") || "1"
-        );
-        hasMorePages = page < totalPages;
-        page++;
+        setModels(data);
+        setTotalPages(total);
+        setHasMore(1 < total);
+      } catch (error) {
+        console.error("Error fetching models:", error);
       }
-
-      setModels(allModels);
+      setIsLoadingModels(false);
     };
 
-    fetchModels();
+    fetchInitialModels();
   }, []);
+
+  /**
+   * Load more models (for infinite scroll)
+   */
+  const loadMoreModels = useCallback(async () => {
+    if (!hasMore || isLoadingModels) return;
+
+    setIsLoadingModels(true);
+    const nextPage = currentPage + 1;
+
+    try {
+      const response = await fetch(
+        getApiUrl(`/wp-json/wp/v2/models?per_page=20&page=${nextPage}&_embed`)
+      );
+      const data = await response.json();
+
+      setModels((prev) => [...prev, ...data]);
+      setCurrentPage(nextPage);
+      setHasMore(nextPage < totalPages);
+    } catch (error) {
+      console.error("Error loading more models:", error);
+    }
+    setIsLoadingModels(false);
+  }, [hasMore, isLoadingModels, currentPage, totalPages]);
 
   /**
    * Fetch the categories (ethnicities)
@@ -119,6 +148,9 @@ export const ModelProvider = ({ children }) => {
     models,
     modelStats,
     categories,
+    isLoadingModels,
+    hasMore,
+    loadMoreModels,
   };
 
   return (

@@ -1,6 +1,6 @@
 import PageWrapper from "../PageWrapper";
 import { fetchPage } from "../../utils/pageUtils";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useModelContext } from "../../contexts/ModelContext";
 import {
   isFilterActive,
@@ -16,7 +16,9 @@ const Models = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(null);
   const [error, setError] = useState(null);
-  const { models, categories } = useModelContext();
+  const { models, categories, isLoadingModels, hasMore, loadMoreModels } =
+    useModelContext();
+  const loadMoreRef = useRef(null);
   const [activeGender, setActiveGender] = useState("all");
   const [activeEthnicity, setActiveEthnicity] = useState("all");
   const [activeInTown, setActiveInTown] = useState("all");
@@ -90,6 +92,23 @@ const Models = () => {
       inTown: inTownCounts,
     };
   }, [models, activeGender, activeEthnicity, activeInTown, categories]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoadingModels) {
+          loadMoreModels();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, isLoadingModels, loadMoreModels]);
 
   return (
     <PageWrapper title={page?.title?.rendered}>
@@ -190,16 +209,32 @@ const Models = () => {
           {/* Display filtered models */}
           {filteredModels.length === 0 ? (
             <p className="text-center text-gray-500 py-8">
-              {models.length === 0 ? "Loading models..." : "No models found matching your filters."}
+              {models.length === 0 && isLoadingModels
+                ? "Loading models..."
+                : "No models found matching your filters."}
             </p>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {filteredModels.map((model) => (
-                <div key={model.id} className="w-full">
-                  <ModelCard model={model} onCardClick={setSelectedModel} />
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {filteredModels.map((model) => (
+                  <div key={model.id} className="w-full">
+                    <ModelCard model={model} onCardClick={setSelectedModel} />
+                  </div>
+                ))}
+              </div>
+
+              {/* Infinite scroll sentinel */}
+              {hasMore && (
+                <div
+                  ref={loadMoreRef}
+                  className="h-20 flex items-center justify-center"
+                >
+                  {isLoadingModels && (
+                    <span className="text-secondary">Loading more...</span>
+                  )}
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
       </div>
