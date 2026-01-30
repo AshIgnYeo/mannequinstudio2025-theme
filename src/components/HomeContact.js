@@ -13,7 +13,11 @@ const HomeContact = () => {
   const instagramUrl = window.mannequinStudioOptions?.contactInstagram;
 
   return (
-    <section ref={sectionRef} className="relative pb-20 px-4 md:px-0" id="contact">
+    <section
+      ref={sectionRef}
+      className="relative pb-20 px-4 md:px-0"
+      id="contact"
+    >
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-0">
           {/* Contact Information */}
@@ -47,7 +51,7 @@ const HomeContact = () => {
                           {number}
                         </a>
                       </div>
-                    )
+                    ),
                 )}
             </div>
 
@@ -84,11 +88,6 @@ const HomeContact = () => {
                   className="rounded-lg shadow-lg"
                   title="Mannequin Studio Location Map"
                 ></iframe>
-                <div className="absolute top-4 left-4 bg-white px-3 py-2 rounded-md shadow-md">
-                  <p className="text-sm font-medium text-gray-800">
-                    372 River Valley Road
-                  </p>
-                </div>
               </div>
             ) : (
               <div className="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center">

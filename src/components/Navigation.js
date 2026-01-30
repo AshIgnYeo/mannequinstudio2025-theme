@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence } from "motion/react";
+import logo from "../images/mannequin-logo.svg";
 
 const Navigation = ({ visible }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [hoverLink, setHoverLink] = useState(null);
+  const isHomepage = window.location.pathname === "/";
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -55,6 +57,16 @@ const Navigation = ({ visible }) => {
 
   return (
     <>
+      {/* Logo - shown on all pages except homepage */}
+      {!isHomepage && (
+        <a href="/" className="fixed top-5 right-18 md:top-14 md:right-28 z-[200]">
+          <img
+            src={logo}
+            alt="Mannequin Studio"
+            className="h-6 md:h-8 w-auto"
+          />
+        </a>
+      )}
       <button
         className="fixed top-4 right-4 md:top-12 md:right-12 z-[200] bg-transparent border-none cursor-pointer p-2 flex flex-col justify-center items-center w-12 h-12 outline-none"
         onClick={toggleMenu}
@@ -148,6 +160,14 @@ const Navigation = ({ visible }) => {
               onTouchEnd={() => handleLinkInteraction("contact", false)}
             >
               Contact
+            </a>
+            <a
+              className="text-primary no-underline text-sm md:text-base transition-all duration-300 mt-8 opacity-70 hover:opacity-100"
+              style={{ transitionDelay: menuOpen ? "0.2s" : "0s" }}
+              href="/pdpa-policy"
+              onClick={closeMenu}
+            >
+              PDPA Policy
             </a>
           </div>
         </div>

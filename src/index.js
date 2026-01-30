@@ -4,7 +4,6 @@ import Homepage from "./components/Homepage";
 import Page from "./components/Page";
 import Single from "./components/Single";
 import Models from "./components/Models/Models";
-import About from "./components/About/About";
 import Casting from "./components/Casting/Casting";
 import { ModelProvider } from "./contexts/ModelContext";
 
@@ -16,10 +15,6 @@ const rootSelectors = [
   {
     root: "#models",
     Component: Models,
-  },
-  {
-    root: "#about",
-    Component: About,
   },
   {
     root: "#casting",

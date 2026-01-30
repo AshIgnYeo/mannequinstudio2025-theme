@@ -38,15 +38,15 @@ body {
   color: var(--color-primary);
   background: linear-gradient(
     135deg,
-    #F4FEFF 0%,
-    #F8F4FF 20%,
+    #E8FCFF 0%,
+    #F0E8FF 20%,
     #F8F8F8 40%,
-    #FFFAF4 60%,
-    #F4FFF8 80%,
-    #F4FEFF 100%
+    #FFF0E8 60%,
+    #E8FFF0 80%,
+    #E8FCFF 100%
   );
   background-size: 400% 400%;
-  animation: gradientShift 45s ease-in-out infinite;
+  animation: gradientShift 25s ease-in-out infinite;
   min-height: 100vh;
 }
 
