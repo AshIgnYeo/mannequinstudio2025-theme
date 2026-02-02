@@ -18,8 +18,8 @@ const HomeHero = forwardRef((props, ref) => {
   };
 
   return (
-    <div ref={ref} className="relative w-full h-screen overflow-x-hidden">
-      <div className="relative z-10 flex flex-col lg:flex-row h-screen">
+    <div ref={ref} className="relative w-full min-h-[50vh] md:min-h-screen overflow-x-hidden">
+      <div className="relative z-10 flex flex-col lg:flex-row min-h-[50vh] md:min-h-screen">
         <div className="w-full lg:w-3/5 flex pt-5 pl-4 md:pl-8">
           <motion.img
             src={logo}

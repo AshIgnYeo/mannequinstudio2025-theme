@@ -79,10 +79,10 @@ b {
 
 .model-gender-filter {
   a {
-    @apply text-4xl;
+    @apply text-xl md:text-4xl;
 
     &.active {
-      @apply text-5xl;
+      @apply text-2xl md:text-5xl;
       color: var(--color-primary);
       background-size: 100% 2px;
     }
@@ -112,7 +112,7 @@ b {
 .model-ethnicity-filter {
   a {
     &.active {
-      @apply text-3xl;
+      @apply text-xl md:text-3xl;
       color: var(--color-primary);
     }
   }

@@ -28,7 +28,7 @@ const HomeModels = () => {
    */
   const calculateModelCardSize = () => {
     const containerWidth = modelsContainerRef.current.offsetWidth;
-    const totalCards = containerWidth > 800 ? 5 : 3;
+    const totalCards = containerWidth > 800 ? 5 : containerWidth > 500 ? 3 : 2;
     const cardWidth = containerWidth / totalCards;
 
     setModelCardSize(cardWidth);
@@ -61,20 +61,20 @@ const HomeModels = () => {
     >
       <div className="w-full">
         <motion.div
-          className="flex w-full justify-between flex-row-reverse items-center"
+          className="flex w-full justify-between flex-col md:flex-row-reverse items-start md:items-center gap-4 md:gap-0"
           initial={{ opacity: 0, y: -30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -30 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           <a href="/models">
-            <h2 className="text-7xl group flex items-center justify-between">
+            <h2 className="text-4xl md:text-5xl lg:text-7xl group flex items-center justify-between">
               All Models
               <BsArrowRight className="ml-5 -translate-x-5 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300" />
             </h2>
           </a>
           <div className="model-gender-filter flex items-center">
             <a
-              className={`mx-2 cursor-pointer ${isFilterActive(
+              className={`mx-1 md:mx-2 cursor-pointer ${isFilterActive(
                 activeGender,
                 "Female",
               )}`}
@@ -83,7 +83,7 @@ const HomeModels = () => {
               WOMEN
             </a>
             <a
-              className={`mx-2 cursor-pointer ${isFilterActive(
+              className={`mx-1 md:mx-2 cursor-pointer ${isFilterActive(
                 activeGender,
                 "Male",
               )}`}
@@ -92,7 +92,7 @@ const HomeModels = () => {
               MEN
             </a>
             <a
-              className={`mx-2 cursor-pointer ${isFilterActive(
+              className={`mx-1 md:mx-2 cursor-pointer ${isFilterActive(
                 activeGender,
                 "all",
               )}`}
@@ -100,19 +100,19 @@ const HomeModels = () => {
             >
               ALL
             </a>
-            <span className="mx-2 text-lg">({filteredModels.length})</span>
+            <span className="mx-1 md:mx-2 text-base md:text-lg">({filteredModels.length})</span>
           </div>
         </motion.div>
 
-        <div className="flex">
+        <div className="flex flex-col md:flex-row">
           {/* ethnicity filter container */}
           <motion.div
-            className="w-1/4"
+            className="w-full md:w-1/4"
             initial={{ opacity: 0, x: -30 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
           >
-            <div className="model-ethnicity-filter flex flex-col gap-2 mx-3 my-5">
+            <div className="model-ethnicity-filter flex flex-row md:flex-col flex-wrap gap-2 mx-3 my-5">
               <a
                 className={`text-xl cursor-pointer ${isFilterActive(
                   activeEthnicity,
@@ -139,7 +139,7 @@ const HomeModels = () => {
           </motion.div>
           {/* models container */}
           <motion.div
-            className="w-3/4 overflow-hidden"
+            className="w-full md:w-3/4 overflow-hidden"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={
               isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }

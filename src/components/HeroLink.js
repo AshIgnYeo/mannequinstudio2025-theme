@@ -6,7 +6,7 @@ const HeroLink = ({ link, delay, setHoverLink }) => {
   const [isActive, setIsActive] = useState(false);
 
   const linkOverrides = {
-    contact: "/#contact",
+    contact: "#contact",
   };
 
   const handleInteractionStart = () => {

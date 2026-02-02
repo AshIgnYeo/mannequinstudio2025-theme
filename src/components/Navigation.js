@@ -112,9 +112,9 @@ const Navigation = ({ visible }) => {
             transformOrigin: "center",
           }}
         >
-          <div className="flex flex-col ml-auto px-4 md:px-8 w-full md:w-2/5">
+          <div className="flex flex-col items-end md:items-start ml-auto px-4 md:px-8 w-full md:w-2/5">
             <a
-              className="text-primary no-underline text-3xl md:text-5xl lg:text-[5rem] transition-all duration-300 py-2"
+              className="text-primary no-underline text-5xl md:text-5xl lg:text-[5rem] transition-all duration-300 py-2"
               style={{ transitionDelay: menuOpen ? "0.1s" : "0s" }}
               href="/"
               onClick={closeMenu}
@@ -126,7 +126,7 @@ const Navigation = ({ visible }) => {
               Home
             </a>
             <a
-              className="text-primary no-underline text-3xl md:text-5xl lg:text-[5rem] transition-all duration-300 py-2"
+              className="text-primary no-underline text-5xl md:text-5xl lg:text-[5rem] transition-all duration-300 py-2"
               style={{ transitionDelay: menuOpen ? "0.1s" : "0s" }}
               href="/about"
               onClick={closeMenu}
@@ -138,7 +138,7 @@ const Navigation = ({ visible }) => {
               About
             </a>
             <a
-              className="text-primary no-underline text-3xl md:text-5xl lg:text-[5rem] transition-all duration-300 py-2"
+              className="text-primary no-underline text-5xl md:text-5xl lg:text-[5rem] transition-all duration-300 py-2"
               style={{ transitionDelay: menuOpen ? "0.1s" : "0s" }}
               href="/models"
               onClick={closeMenu}
@@ -150,7 +150,7 @@ const Navigation = ({ visible }) => {
               Models
             </a>
             <a
-              className="text-primary no-underline text-3xl md:text-5xl lg:text-[5rem] transition-all duration-300 py-2"
+              className="text-primary no-underline text-5xl md:text-5xl lg:text-[5rem] transition-all duration-300 py-2"
               style={{ transitionDelay: menuOpen ? "0.1s" : "0s" }}
               href="/#contact"
               onClick={handleContactClick}
