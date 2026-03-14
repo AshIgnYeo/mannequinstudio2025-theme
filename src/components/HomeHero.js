@@ -37,8 +37,9 @@ const HomeHero = forwardRef((props, ref) => {
         <div className="w-full lg:w-2/5">
           <div className="flex flex-col justify-center gap-4 md:gap-10 h-full px-4 lg:px-0">
             <HeroLink link="models" delay={0.2} setHoverLink={setHoverLink} />
-            <HeroLink link="about" delay={0.4} setHoverLink={setHoverLink} />
-            <HeroLink link="contact" delay={0.6} setHoverLink={setHoverLink} />
+            <HeroLink link="casting" delay={0.4} setHoverLink={setHoverLink} />
+            <HeroLink link="about" delay={0.6} setHoverLink={setHoverLink} />
+            <HeroLink link="contact" delay={0.8} setHoverLink={setHoverLink} />
           </div>
         </div>
       </div>
