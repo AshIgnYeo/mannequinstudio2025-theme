@@ -67,7 +67,7 @@ const ModelPopup = ({ model, onClose }) => {
         {/* Close button */}
         <button
           onClick={handleClose}
-          className="absolute top-2 right-2 md:top-4 md:right-4 text-red-500 text-2xl p-2 z-10"
+          className="absolute top-2 right-2 md:top-4 md:right-4 text-red-500 text-2xl p-3 z-10"
           aria-label="Close"
         >
           <FaTimes />
@@ -100,7 +100,7 @@ const ModelPopup = ({ model, onClose }) => {
                   key={image.id}
                   src={image.thumbnail}
                   alt={image.alt}
-                  className={`aspect-[3/4] object-cover w-16 md:w-20 transition duration-300 cursor-pointer flex-shrink-0 ${
+                  className={`aspect-[3/4] object-cover w-12 sm:w-16 md:w-20 transition duration-300 cursor-pointer flex-shrink-0 ${
                     selectedImage?.id === image.id
                       ? "shadow-md scale-95"
                       : ""
@@ -131,7 +131,7 @@ const ModelPopup = ({ model, onClose }) => {
                 href={`https://instagram.com/${model.acf.instagram}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-3xl md:text-2xl hover:opacity-70 transition-opacity p-1"
+                className="text-3xl md:text-2xl hover:opacity-70 transition-opacity p-2"
                 aria-label="Instagram"
               >
                 <FaInstagram />
@@ -142,7 +142,7 @@ const ModelPopup = ({ model, onClose }) => {
                 href={model.acf.youtube}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-3xl md:text-2xl hover:opacity-70 transition-opacity p-1"
+                className="text-3xl md:text-2xl hover:opacity-70 transition-opacity p-2"
                 aria-label="YouTube"
               >
                 <FaYoutube />
@@ -153,7 +153,7 @@ const ModelPopup = ({ model, onClose }) => {
                 href={model.acf.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-3xl md:text-2xl hover:opacity-70 transition-opacity p-1"
+                className="text-3xl md:text-2xl hover:opacity-70 transition-opacity p-2"
                 aria-label="Facebook"
               >
                 <FaFacebook />
@@ -169,7 +169,7 @@ const ModelPopup = ({ model, onClose }) => {
           </p>
 
           {/* Measurements grid */}
-          <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-6">
+          <div className="grid grid-cols-2 gap-x-4 md:gap-x-8 gap-y-2 mb-6">
             {/* Left column */}
             <div>
               {model.acf.height && (

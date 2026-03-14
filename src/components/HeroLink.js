@@ -22,7 +22,7 @@ const HeroLink = ({ link, delay, setHoverLink }) => {
   return (
     <motion.a
       href={linkOverrides[link] || `/${link}`}
-      className="text-4xl md:text-6xl lg:text-8xl flex items-center group"
+      className="text-3xl sm:text-4xl md:text-6xl lg:text-8xl flex items-center group"
       onMouseEnter={handleInteractionStart}
       onMouseLeave={handleInteractionEnd}
       onTouchStart={handleInteractionStart}

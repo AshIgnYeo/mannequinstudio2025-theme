@@ -15,7 +15,7 @@ const HomeContact = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative pb-20 px-4 md:px-0"
+      className="relative pb-10 md:pb-20 px-4 md:px-0"
       id="contact"
     >
       <div className="container mx-auto">
@@ -63,7 +63,7 @@ const HomeContact = () => {
                 rel="noopener noreferrer"
                 className="inline-block hover:opacity-75 transition-opacity duration-200 p-2 -m-2"
               >
-                <FaInstagram className="text-4xl md:text-3xl text-secondary hover:text-primary transition-colors duration-300" />
+                <FaInstagram className="text-3xl text-secondary hover:text-primary transition-colors duration-300" />
               </a>
             </div>
           </motion.div>
@@ -81,7 +81,7 @@ const HomeContact = () => {
                   src={mapEmbedUrl}
                   width="100%"
                   height="100%"
-                  style={{ border: 0, minHeight: "50vh" }}
+                  style={{ border: 0, minHeight: "35vh" }}
                   allowFullScreen=""
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"

@@ -30,9 +30,8 @@ export const validateFile = (file, maxSize = 5120) => {
     return { valid: false, error: 'File is required' };
   }
 
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/gif'];
-  if (!allowedTypes.includes(file.type)) {
-    return { valid: false, error: 'Only JPG, JPEG, and GIF files are allowed' };
+  if (!file.type.startsWith('image/')) {
+    return { valid: false, error: 'Only image files are allowed' };
   }
 
   const fileSizeKB = file.size / 1024;

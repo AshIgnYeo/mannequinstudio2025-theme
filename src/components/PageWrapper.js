@@ -5,7 +5,7 @@ const PageWrapper = ({ children, title }) => {
   return (
     <div className="container mx-auto pt-5">
       <Navigation />
-      <h1 className="text-8xl font-bold">{decodeHtmlEntities(title)}</h1>
+      <h1 className="text-4xl md:text-6xl lg:text-8xl font-bold">{decodeHtmlEntities(title)}</h1>
       {children}
     </div>
   );

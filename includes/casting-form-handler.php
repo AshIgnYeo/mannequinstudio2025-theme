@@ -23,27 +23,42 @@ function handle_casting_form_submission() {
     $rate_limit_key = 'casting_form_' . md5($ip_address);
     $submission_count = get_transient($rate_limit_key);
 
-    if ($submission_count && $submission_count >= 3) {
+    // Skip rate limiting on localhost
+    $is_local = in_array($ip_address, array('127.0.0.1', '::1')) || strpos($_SERVER['HTTP_HOST'] ?? '', '.local') !== false;
+
+    if (!$is_local && $submission_count && $submission_count >= 3) {
         wp_send_json_error(array(
             'message' => 'Too many submissions. Please wait 1 hour before submitting again.'
         ));
         return;
     }
 
-    // Validate required text fields
+    // Validate required text fields (common to all genders)
     $required_fields = array(
         'name' => 'Full Name',
         'email' => 'Email Address',
         'phone' => 'Phone Number',
         'gender' => 'Gender',
-        'hair_color' => 'Hair Color',
-        'eye_color' => 'Eye Color',
+        'ethnicity' => 'Ethnicity',
+        'hair_colour' => 'Hair Colour',
+        'eye_colour' => 'Eye Colour',
         'height' => 'Height',
-        'bust' => 'Bust',
         'waist' => 'Waist',
-        'hips' => 'Hips',
         'shoe_size' => 'Shoe Size'
     );
+
+    $gender = isset($_POST['gender']) ? sanitize_text_field($_POST['gender']) : '';
+
+    // Gender-specific required fields
+    if ($gender === 'Female') {
+        $required_fields['bust'] = 'Bust';
+        $required_fields['hip'] = 'Hip';
+        $required_fields['dress'] = 'Dress';
+    } elseif ($gender === 'Male') {
+        $required_fields['chest'] = 'Chest';
+        $required_fields['collar'] = 'Collar';
+        $required_fields['suit'] = 'Suit';
+    }
 
     $form_data = array();
     $validation_errors = array();
@@ -61,9 +76,13 @@ function handle_casting_form_submission() {
         $validation_errors[] = 'Please provide a valid email address.';
     }
 
-    // Optional social media fields
-    $form_data['instagram'] = isset($_POST['instagram']) ? sanitize_text_field($_POST['instagram']) : '';
-    $form_data['tiktok'] = isset($_POST['tiktok']) ? sanitize_text_field($_POST['tiktok']) : '';
+    // Optional fields (gender-specific measurements that weren't required)
+    $optional_fields = array('bust', 'chest', 'hip', 'collar', 'dress', 'suit', 'instagram', 'tiktok', 'youtube');
+    foreach ($optional_fields as $field) {
+        if (!isset($form_data[$field]) && isset($_POST[$field])) {
+            $form_data[$field] = sanitize_text_field($_POST[$field]);
+        }
+    }
 
     // Check for validation errors
     if (!empty($validation_errors)) {
@@ -92,7 +111,7 @@ function handle_casting_form_submission() {
 
     $uploaded_files = array();
     $upload_errors = array();
-    $allowed_types = array('image/jpeg', 'image/jpg', 'image/gif');
+    $allowed_types = array('image/jpeg', 'image/jpg', 'image/gif', 'image/png', 'image/webp', 'image/heic', 'image/heif');
     $max_size = 5 * 1024 * 1024; // 5MB in bytes
 
     foreach ($photo_labels as $field_name => $label) {
@@ -117,7 +136,7 @@ function handle_casting_form_submission() {
 
         // Validate file type
         if (!in_array($file['type'], $allowed_types)) {
-            $upload_errors[] = $label . ' must be JPG, JPEG, or GIF format.';
+            $upload_errors[] = $label . ' must be an image file (JPG, PNG, GIF, or WebP).';
             continue;
         }
 
@@ -161,30 +180,55 @@ function handle_casting_form_submission() {
 
     // Build email body
     $message = "New casting submission received:\n\n";
-    $message .= "=== CONTACT INFORMATION ===\n";
+    $message .= "=== PERSONAL INFORMATION ===\n";
     $message .= "Name: " . $form_data['name'] . "\n";
     $message .= "Email: " . $form_data['email'] . "\n";
-    $message .= "Phone: " . $form_data['phone'] . "\n\n";
+    $message .= "Phone: " . $form_data['phone'] . "\n";
+    $message .= "Gender: " . $form_data['gender'] . "\n";
+    $message .= "Ethnicity: " . $form_data['ethnicity'] . "\n\n";
 
     $message .= "=== PHYSICAL ATTRIBUTES ===\n";
-    $message .= "Gender: " . $form_data['gender'] . "\n";
-    $message .= "Hair Color: " . $form_data['hair_color'] . "\n";
-    $message .= "Eye Color: " . $form_data['eye_color'] . "\n\n";
+    $message .= "Hair Colour: " . $form_data['hair_colour'] . "\n";
+    $message .= "Eye Colour: " . $form_data['eye_colour'] . "\n\n";
 
     $message .= "=== MEASUREMENTS ===\n";
     $message .= "Height: " . $form_data['height'] . "\n";
-    $message .= "Bust: " . $form_data['bust'] . "\n";
-    $message .= "Waist: " . $form_data['waist'] . "\n";
-    $message .= "Hips: " . $form_data['hips'] . "\n";
-    $message .= "Shoe Size: " . $form_data['shoe_size'] . "\n\n";
 
-    if (!empty($form_data['instagram']) || !empty($form_data['tiktok'])) {
+    if ($gender === 'Female') {
+        $message .= "Bust: " . $form_data['bust'] . "\n";
+    } elseif ($gender === 'Male') {
+        $message .= "Chest: " . $form_data['chest'] . "\n";
+    }
+
+    $message .= "Waist: " . $form_data['waist'] . "\n";
+
+    if ($gender === 'Female') {
+        $message .= "Hip: " . $form_data['hip'] . "\n";
+    } elseif ($gender === 'Male') {
+        $message .= "Collar: " . $form_data['collar'] . "\n";
+    }
+
+    $message .= "Shoe Size: " . $form_data['shoe_size'] . "\n";
+
+    if ($gender === 'Female' && !empty($form_data['dress'])) {
+        $message .= "Dress: " . $form_data['dress'] . "\n";
+    } elseif ($gender === 'Male' && !empty($form_data['suit'])) {
+        $message .= "Suit: " . $form_data['suit'] . "\n";
+    }
+
+    $message .= "\n";
+
+    $has_socials = !empty($form_data['instagram']) || !empty($form_data['tiktok']) || !empty($form_data['youtube']);
+    if ($has_socials) {
         $message .= "=== SOCIAL MEDIA ===\n";
         if (!empty($form_data['instagram'])) {
             $message .= "Instagram: " . $form_data['instagram'] . "\n";
         }
         if (!empty($form_data['tiktok'])) {
             $message .= "TikTok: " . $form_data['tiktok'] . "\n";
+        }
+        if (!empty($form_data['youtube'])) {
+            $message .= "YouTube: " . $form_data['youtube'] . "\n";
         }
         $message .= "\n";
     }
@@ -204,14 +248,29 @@ function handle_casting_form_submission() {
         'Reply-To: ' . $form_data['email']
     );
 
-    // Prepare attachments
+    // Prepare attachments - copy to temp files with proper names
+    // (PHP temp uploads have no extension, causing unnamed attachments)
     $attachments = array();
+    $temp_files = array();
+    $temp_dir = get_temp_dir();
+
     foreach ($uploaded_files as $file) {
-        $attachments[] = $file['path'];
+        $temp_path = $temp_dir . $file['name'];
+        if (copy($file['path'], $temp_path)) {
+            $attachments[] = $temp_path;
+            $temp_files[] = $temp_path;
+        } else {
+            $attachments[] = $file['path'];
+        }
     }
 
     // Send email
     $email_sent = wp_mail($to_email, $subject, $message, $headers, $attachments);
+
+    // Clean up temp files
+    foreach ($temp_files as $temp_file) {
+        @unlink($temp_file);
+    }
 
     if (!$email_sent) {
         wp_send_json_error(array(

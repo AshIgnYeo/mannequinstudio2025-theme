@@ -69,7 +69,7 @@ const PhotoUpload = ({
               <button
                 type="button"
                 onClick={clearFile}
-                className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-9 h-9 flex items-center justify-center opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
                 aria-label="Remove photo"
               >
                 ×
@@ -84,7 +84,7 @@ const PhotoUpload = ({
               <input
                 type="file"
                 name={name}
-                accept="image/jpeg,image/jpg,image/gif"
+                accept="image/*"
                 onChange={handleFileChange}
                 className="hidden"
               />
