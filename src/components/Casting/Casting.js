@@ -241,7 +241,7 @@ const Casting = () => {
         setFormKey(prev => prev + 1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        console.error('Casting form submission error:', result.data.message, result.data.errors || []);
+        console.error('Casting form submission error:', result.data.message, result.data.errors || [], result.data.debug || '');
         setSubmitStatus({
           type: 'error',
           message: 'Something went wrong. Please try again or contact us directly.'

@@ -273,8 +273,17 @@ function handle_casting_form_submission() {
     }
 
     if (!$email_sent) {
+        // Capture the PHPMailer error for debugging
+        global $phpmailer;
+        $mail_error = '';
+        if (isset($phpmailer) && is_object($phpmailer)) {
+            $mail_error = $phpmailer->ErrorInfo;
+        }
+        error_log('Casting form wp_mail() failed. To: ' . $to_email . ' | Error: ' . $mail_error);
+
         wp_send_json_error(array(
-            'message' => 'Failed to send submission. Please try again or contact us directly at ' . $to_email
+            'message' => 'Failed to send submission. Please try again or contact us directly at ' . $to_email,
+            'debug' => $mail_error
         ));
         return;
     }
