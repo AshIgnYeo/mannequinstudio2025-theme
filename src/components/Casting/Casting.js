@@ -169,7 +169,12 @@ const Casting = () => {
     setFieldErrors(errors);
     setPhotoErrors(pErrors);
 
-    return Object.keys(errors).length === 0 && Object.keys(pErrors).length === 0;
+    const hasErrors = Object.keys(errors).length > 0 || Object.keys(pErrors).length > 0;
+    if (hasErrors) {
+      console.error('Casting form validation errors:', { fieldErrors: errors, photoErrors: pErrors });
+    }
+
+    return !hasErrors;
   };
 
   // Handle form submission
@@ -181,7 +186,7 @@ const Casting = () => {
     if (!validateForm()) {
       setSubmitStatus({
         type: 'error',
-        message: 'Please fix all errors before submitting.'
+        message: 'Please fix the highlighted fields before submitting.'
       });
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
@@ -236,10 +241,10 @@ const Casting = () => {
         setFormKey(prev => prev + 1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
+        console.error('Casting form submission error:', result.data.message, result.data.errors || []);
         setSubmitStatus({
           type: 'error',
-          message: result.data.message,
-          errors: result.data.errors
+          message: 'Something went wrong. Please try again or contact us directly.'
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -310,18 +315,11 @@ const Casting = () => {
           <div
             className={`mb-8 p-4 rounded ${
               submitStatus.type === 'success'
-                ? 'bg-green-900/30 border border-green-600 text-green-300'
-                : 'bg-red-900/30 border border-red-600 text-red-300'
+                ? 'bg-green-50 border border-green-500 text-green-800'
+                : 'bg-red-50 border border-red-500 text-red-800'
             }`}
           >
-            <p className="font-semibold mb-2">{submitStatus.message}</p>
-            {submitStatus.errors && submitStatus.errors.length > 0 && (
-              <ul className="list-disc list-inside text-sm">
-                {submitStatus.errors.map((err, idx) => (
-                  <li key={idx}>{err}</li>
-                ))}
-              </ul>
-            )}
+            <p className="font-semibold">{submitStatus.message}</p>
           </div>
         )}
 
